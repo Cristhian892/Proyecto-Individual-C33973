@@ -29,12 +29,19 @@ datos <- read_sav("DEFU2022.sav")
 datos_filtrados <- datos %>% 
    select(-any_of(c("anotrab", 
                     "mestrab", 
+                    "nacionalid",
+                    "estcivil",
                     "edadsrec", 
                     "pcd",
                     "IU", 
                     "autopsia", 
                     "asistmed", 
                     "instmurio", 
+                    "provocu",
+                    "pcocu",
+                    "diadef",
+                    "mesdef",
+                    "anodef",
                     "ocuparec", 
                     "provregis",
                     "pcregis",
@@ -44,7 +51,8 @@ datos_filtrados <- datos %>%
                     "grgruposcb",
                     "gruposcb",
                     "reginec", 
-                    "regsalud")))
+                    "regsalud",
+                    "nacmadre")))
 
 #Sacamos la cantidad de muertes por provincia 
 muertes_privincia <- datos_filtrados %>% #Selecciona los datos que se han filtrado
