@@ -176,9 +176,65 @@ ggplot(resultados_mensuales, aes(x = mes, y = total_muertes, fill = sexo)) +
   )
 ```
 
+```{r}
+# Vamos a buscar las principales causas de muerte por provincia 
+muertes_5_causas <- datos_filtrados %>%
+  group_by(provincia, sexo, causamuer, des_causa) %>%
+  summarise(total = n(), .groups = "drop") %>%
+  arrange(provincia, sexo, desc(total)) %>%
+  group_by(provincia, sexo) %>%
+  slice_head(n = 5) %>% 
+   ungroup()
 
+# Buscamos el promedio de las edades por las diferentes causas de muerte de cada provincia 
+promedio_edad_causas <- datos_filtrados %>%
+  inner_join(muertes_5_causas %>% select(provincia, sexo, causamuer), 
+             by = c("provincia", "sexo", "causamuer")) %>%
+  group_by(provincia, sexo, causamuer, des_causa) %>%
+  summarise(
+    promedio_edad = mean(edads, na.rm = TRUE),  
+    n_casos = n(),
+    .groups = 'drop'
+  ) %>%
+  mutate(
+    sexo = case_when(
+    sexo == 1 ~ "Hombre",   
+    sexo == 2 ~ "Mujer",
+    TRUE ~ as.character(sexo)   
+  ))
+```
 
+```{r}
+#se va a crear una grafica interactiva
+grafica_interactiva <- promedio_edad_causas %>%
+  mutate(etiqueta = paste(
+    "Provincia:", provincia, "\n",
+    "Causa:", des_causa, "\n", 
+    "Sexo:", sexo, "\n",
+    "Edad promedio:", round(promedio_edad, 1), "\n",
+    "Casos:", n_casos
+  )) %>%
+  ggplot(aes(x = promedio_edad, y = fct_reorder(causamuer, promedio_edad), 
+             text = etiqueta)) +
+  geom_point(aes(size = n_casos, color = sexo), alpha = 0.7) +
+  facet_grid(provincia ~ ., scales = "free_y", space = "free_y") +
+  labs(
+    title = "Promedio de edad y frecuencia de las principales causas de muerte",
+    x = "Edad promedio",
+    y = "Causa de muerte",
+    size = "Número de casos",
+    color = "Sexo"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("Hombre" = "#1f77b4", "Mujer" = "#ff7f0e")) +
+  theme(
+    strip.text.y = element_text(angle = 0, size = 8),
+    axis.text.y = element_text(size = 7)
+  )
 
+# Convertir a interactivo
+ggplotly(grafica_interactiva, tooltip = "text")
+```
 
 
 
