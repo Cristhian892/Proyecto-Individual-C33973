@@ -51,7 +51,6 @@ muertes_privincia <- datos_filtrados %>% #Selecciona los datos que se han filtra
 ```
 
 ```{r}
-
 #Las 5 principales causas de defunción por provincia
 muertes_5_causas <- datos_filtrados %>% #Selecciona los datos que se han filtrado
    group_by(provincia, sexo, causamuer, des_causa) %>% #Se agrupa por provincia, sexo, causamuer y des_causa
@@ -128,5 +127,44 @@ for (prov in unique(datos_filtrados$provincia)) { #itera sobre las provincias ú
      grid.arrange(plot_grafico, tabla_grob, ncol = 1, heights = c(3, 1))
      }
   }
-
 ```
+
+```{r}
+# defunciones por provincias y sexo de manera anual
+muertes_privincia <- datos_filtrados %>%
+   group_by(provincia, sexo, causamuer) %>%
+   summarise(total_nuertes = n(), .groups = "drop")
+```
+
+```{r}
+nombres_meses <- c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
+
+# analisis mensual, por medio del mes.
+resultados_mensuales <- datos_filtrados %>%
+  group_by(mesdef, sexo, causamuer, des_causa) %>%
+  summarise(total_muertes = n(), .groups = "drop") %>%
+  group_by(mesdef, sexo) %>%
+  arrange(mesdef, sexo, desc(total_muertes)) %>%
+  slice_head(n = 5) %>%
+  ungroup() %>%
+  mutate(
+    sexo = case_when(
+      sexo == 1 ~ "Hombre",
+      sexo == 2 ~ "Mujer",
+      TRUE ~ as.character(sexo)
+    ),
+    mes = factor(nombres_meses[mesdef], levels = nombres_meses)  
+  ) 
+```
+
+
+
+
+
+
+
+
+
+
+
