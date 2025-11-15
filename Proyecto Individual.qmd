@@ -161,6 +161,21 @@ resultados_mensuales <- datos_filtrados %>%
 ```
 
 ```{r}
+muertes_por_mes_sexo_prov <- datos_filtrados %>%
+  group_by(mesdef, sexo, provincia) %>%
+  summarise(total_muertes = n(), .groups = "drop") %>%
+  mutate(
+    sexo = case_when(
+      sexo == 1 ~ "Hombre",
+      sexo == 2 ~ "Mujer",
+      TRUE ~ as.character(sexo)
+    ),
+    mes = factor(nombres_meses[mesdef], levels = nombres_meses)
+  ) %>%
+  arrange(mesdef, sexo, provincia)
+```
+
+```{r}
 #Gráfica por mes, de la cantidad de defunciones de hombres y mujeres.
 ggplot(resultados_mensuales, aes(x = mes, y = total_muertes, fill = sexo)) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -313,4 +328,23 @@ conteo_sexo_canton <- muertes_por_canton %>%
 
 # Ver la tabla resultante
 print(conteo_sexo_canton)
+```
+
+```{r}
+# Tabla distribuida por los cantones y el total de muertes tanto de hombres como mujeres por cantón 
+total_defunciones_canton <- muertes_por_canton %>%
+  mutate(sexo = case_when(
+    sexo == 1 ~ "Hombre",
+    sexo == 2 ~ "Mujer",
+    TRUE ~ as.character(sexo)
+  )) %>%
+  group_by(pc, sexo) %>%
+  summarise(total_muertes = n(), .groups = "drop") %>%
+  left_join(canton_nombres, by = "pc") %>%
+  select(nombre_canton, sexo, total_muertes) %>%
+  pivot_wider(names_from = sexo, values_from = total_muertes, values_fill = 0) %>%
+  arrange(nombre_canton)
+
+print(total_defunciones_canton)
+
 ```
