@@ -7,15 +7,17 @@ editor: visual
 
 ```{r}
 # Cargar librerías necesarias
+library(tidyverse)
 library(gridExtra) # nos ayuda a poder mezclar gráficos y tablas
 library(ggplot2) #lo usamos para generar las gráficas que se van a presentar
 library(stringr) #Nos ayuda al manejo de cadenas de texto, etc.
+library(plotly)
 library(haven) #La base de datos es .sav entonces se usó esta librería para poder cargarla
 library(dplyr) #nos ayuda a transformar y utilizar data frame de manera eficaz, y legible
 library(tidyr) #nos ayuda a transformar datos en formato tidy, ayudando la limpieza y demás
 library(grid) #nos ayuda a crear elementos gráficos personalizados, posición, tamaño, etc.
 library(gt) # con este lo usamos para generar tablas para presentación
-library(plotly)
+
 ```
 
 ```{r}
@@ -296,7 +298,7 @@ muertes_por_canton <- datos_filtrados %>%
 ```
 
 ```{r}
-# Conteo por cantón y sexo (sin causamuer)
+# Conteo por cantón y sexo 
 conteo_sexo_canton <- muertes_por_canton %>%
   mutate(sexo = case_when(
     sexo == 1 ~ "Hombre",
@@ -306,7 +308,7 @@ conteo_sexo_canton <- muertes_por_canton %>%
   group_by(pc, sexo, causamuer, des_causa) %>%
   summarise(total_muertes = n(), .groups = "drop") %>%
   left_join(canton_nombres, by = "pc") %>%
-  select(sexo, nombre_canton, causamuer, des_causa, total_muertes) %>%  # Eliminamos causamuer
+  select(sexo, nombre_canton, causamuer, des_causa, total_muertes) %>%
   arrange(nombre_canton, sexo)
 
 # Ver la tabla resultante
