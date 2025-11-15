@@ -40,7 +40,6 @@ datos_filtrados <- datos %>%
                     "provocu",
                     "pcocu",
                     "diadef",
-                    "mesdef",
                     "anodef",
                     "ocuparec", 
                     "provregis",
@@ -134,7 +133,7 @@ for (prov in unique(datos_filtrados$provincia)) { #itera sobre las provincias ú
        theme(legend.position = "none") # 
     
      # Combinar la gráfica y la tabla creada arriba en un solo output
-     grid.arrange(plot_grafico, tabla_grob, ncol = 1, heights = c(3, 1))
+     grid.arrange(plot_grafico, tabla_grob, ncol = 1, heights = c(4, 1))
      }
   }
 ```
