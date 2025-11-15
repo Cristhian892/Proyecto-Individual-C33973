@@ -236,6 +236,79 @@ grafica_interactiva <- promedio_edad_causas %>%
 ggplotly(grafica_interactiva, tooltip = "text")
 ```
 
+```{r}
+# Se va a  generar un resumen sobre  el promedio de edad
+resumen_edad_promedio <- promedio_edad_causas %>%
+  select(provincia, sexo, des_causa, promedio_edad, n_casos) %>%
+  arrange(provincia, sexo, desc(promedio_edad)) %>%
+  rename(
+    Provincia = provincia,
+    Sexo = sexo,
+    "Causa de muerte" = des_causa,
+    "Promedio de edad" = promedio_edad,
+    "Número de casos" = n_casos
+  )
 
+#se va a generar una tabla  
+resumen_edad <- resumen_edad_promedio %>%
+  group_by(Provincia, Sexo) %>%
+  summarise(
+    `Promedio general de edad` = round(mean(`Promedio de edad`), 1),
+    `Causa con mayor promedio` = first(`Causa de muerte`),
+    `Mayor promedio de edad` = round(first(`Promedio de edad`), 1),
+    `Total causas analizadas` = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(Provincia, Sexo)
 
+# resumen de edad promedio 
+print(resumen_edad)
+```
 
+```{r}
+#Analisis por cantones
+datos_cantones <- datos_filtrados$pc # se va a extraer el código de los cantones 
+datos_cantones <- as.data.frame(datos_cantones) # Se va a convertir los códigos de los cantones en una data frame
+
+#Se va a realizar el mapeo de  los códigos de cantones con el nombre correspondiente a cada uno 
+canton_nombres <- data.frame(
+  pc = c(706, 705, 704, 703, 702, 701, 613, 612, 611, 610, 609, 608, 607, 606, 605, 604, 603, 602, 601, 511, 510, 509, 508, 507, 506, 505, 504, 503, 502, 501, 410, 409, 408, 407, 406, 405, 404, 403, 402, 401, 308, 307, 306, 305, 304, 303, 302, 301, 216, 215, 214, 213, 212, 211, 210, 209, 208, 207, 206, 205, 204, 203, 202, 201, 120, 119, 118, 117, 116, 115, 114, 113, 112, 111, 110, 109, 108, 107, 106, 105, 104, 103, 102, 101),
+  nombre_canton = c("Guácimo", "Matina", "Talamanca", "Siquirres", "Pococí", "Limón", "Puerto Jiménez", "Monteverde", "Garabito", "Corredores", "Parrita", "Coto Brus", "Golfito", "Quepos", "Osa", "Montes de Oro", "Buenos Aires", "Esparza", "Puntarenas", "Hojancha", "La Cruz", "Nandayure", "Tilarán", "Abangares", "Cañas", "Carrillo", "Bagaces", "Santa Cruz", "Nicoya", "Liberia", "Sarapiquí", "San Pablo", "Flores", "Belén", "San Isidro", "San Rafael", "Santa Bárbara", "Santo Domingo", "Barva", "Heredia", "El Guarco", "Oreamuno", "Alvarado", "Turrialba", "Jiménez", "La Unión", "Paraíso", "Cartago", "Río Cuarto", "Guatuso", "Los Chiles", "Upala", "Sarchí", "Zarcero", "San Carlos", "Orotina", "Poás", "Palmares", "Naranjo", "Atenas", "San Mateo", "Grecia", "San Ramón", "Alajuela", "León Cortés Castro", "Pérez Zeledón", "Curridabat", "Dota", "Turrubares", "Montes de Oca", "Moravia", "Tibás", "Acosta", "Vázquez de Coronado", "Alajuelita", "Santa Ana", "Goicoechea", "Mora", "Aserrí", "Tarrazú", "Puriscal", "Desamparados", "Escazú", "San José")
+)
+
+muertes_por_canton <- datos_filtrados %>%
+  mutate(sexo = as.character(sexo)) %>%  #Se convierte la variable sexo a carácter
+  group_by(provincia, pc, mesdef, sexo, causamuer, des_causa) %>%
+  summarise(total_muertes = n(), .groups = "drop") %>%
+  group_by(pc, mesdef, sexo) %>%
+  arrange(pc, mesdef, sexo, desc(total_muertes)) %>%
+  slice_head(n = 5) %>%
+  ungroup() %>%
+  left_join(canton_nombres, by = "pc") %>%  # Se añade nombres a cada cantón  
+  mutate(
+    sexo = case_when(
+      sexo == 1 ~ "Hombre",
+      sexo == 2 ~ "Mujer",
+      TRUE ~ as.character(sexo)
+      ),
+    mes = factor(nombres_meses[mesdef], levels = nombres_meses) # Pasa de número a nombre cada mes 
+  )
+```
+
+```{r}
+# Conteo por cantón y sexo (sin causamuer)
+conteo_sexo_canton <- muertes_por_canton %>%
+  mutate(sexo = case_when(
+    sexo == 1 ~ "Hombre",
+    sexo == 2 ~ "Mujer",
+    TRUE ~ as.character(sexo)
+  )) %>%
+  group_by(pc, sexo, causamuer, des_causa) %>%
+  summarise(total_muertes = n(), .groups = "drop") %>%
+  left_join(canton_nombres, by = "pc") %>%
+  select(sexo, nombre_canton, causamuer, des_causa, total_muertes) %>%  # Eliminamos causamuer
+  arrange(nombre_canton, sexo)
+
+# Ver la tabla resultante
+print(conteo_sexo_canton)
+```
