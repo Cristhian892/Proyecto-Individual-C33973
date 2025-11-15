@@ -158,8 +158,23 @@ resultados_mensuales <- datos_filtrados %>%
   ) 
 ```
 
-
-
+```{r}
+#Gráfica por mes, de la cantidad de defunciones de hombres y mujeres.
+ggplot(resultados_mensuales, aes(x = mes, y = total_muertes, fill = sexo)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Total de muertes por mes y sexo",
+    x = "Mes",
+    y = "Total de muertes",
+    fill = "sexo"
+  ) +
+  scale_fill_manual(values = c("Hombre" = "#1f77b4", "Mujer" = "#CD3333", "Otro" = "red")) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1), # se tomó la decisión de poner los nombres de los meses, si el ángulo es de 45 la lectura es borrosa, si es de 0, algunos se solapan, entonces se puso un ángulo de 90
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+```
 
 
 
